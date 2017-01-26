@@ -1,0 +1,71 @@
+<canvas id="ctx" width="500" height="500" style="border: 1px solid #000000"></canvas>
+
+<script src="/socket.io-1.4.5.js"></script>
+<script>
+    var socket = io();
+    
+    // set object drawing            
+    var GridFanorona = function(widthGrid, heightGrid, element){
+        return{
+            config : {
+                widthofGrid : function(){
+                    return widthGrid;    
+                },
+                heightofGrid : function(){
+                    return heightGrid;
+                },
+                elementGrid : function(){
+                    return element; 
+                },
+                fontGrid : function(){
+                    return "30px Arial";
+                }
+            },
+            //draw grid
+            drawGrid :function(){
+                var app = this;
+                var ctx = document.getElementById(app.config.elementGrid()).getContext("2d");
+                ctx.font = app.config.fontGrid();            
+                ctx.clearRect(0, 0, app.config.widthofGrid(), app.config.heightofGrid());
+                socket.on('newPosition', function(data){
+                    for(var i = 0; i < data.length; i++){
+                        ctx.fillText(data[i].number, data[i].x, data[i].y);   
+                    }
+                });
+            },
+            //init grid 
+            init : function(){
+                var app = this;
+                app.drawGrid();
+                app.enventToGrid();
+            },
+            //event to grid
+            enventToGrid :  function(){
+                document.onkeydown =  function(event){
+                    if(event.keyCode === 39)
+                        socket.emit('keyPress', {inputId: 'right', state: true});
+                    else if(event.keyCode === 40)
+                        socket.emit('keyPress', {inputId: 'down', state: true});
+                    else if(event.keyCode === 37)
+                        socket.emit('keyPress', {inputId: 'left', state: true});
+                    else if(event.keyCode === 38)
+                        socket.emit('keyPress', {inputId: 'up', state: true});            
+                } 
+                document.onkeyup =  function(event){
+                    if(event.keyCode === 39)
+                        socket.emit('keyPress', {inputId: 'right', state: false});
+                    else if(event.keyCode === 40)
+                        socket.emit('keyPress', {inputId: 'down', state: false});
+                    else if(event.keyCode === 37)
+                        socket.emit('keyPress', {inputId: 'left', state: false});
+                    else if(event.keyCode === 38)
+                        socket.emit('keyPress', {inputId: 'up', state: false});            
+                } 
+            }    
+        }    
+    };
+    //instance of grid fanorona
+    var oGridLab = new GridFanorona(900, 900, "ctx");
+    oGridLab.init();
+    
+</script>
